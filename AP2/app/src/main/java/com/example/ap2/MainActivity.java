@@ -28,31 +28,49 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 
 public class MainActivity extends Activity {
 
     private static Context context;
     public static TextView devices_text;
     BluetoothAdapter bluetoothAdapter;
+    private final int REQUEST_PERMISSION_ACCESS_COARSE_LOCATION =1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 5);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_PERMISSION_ACCESS_COARSE_LOCATION);
         }
-
-        MainActivity.context = getApplicationContext();
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        devices_text=findViewById(R.id.textView);
-        enableBluetooth();
-
+        else {
+            initialization();
+        }
     }
 
     public static Context getAppContext() {
         return MainActivity.context;
     }
+
+    private void initialization() {
+        MainActivity.context = getApplicationContext();
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if(bluetoothAdapter ==null)
+        {
+            Toast.makeText(MainActivity.this, "Cannot get default Adapter.", Toast.LENGTH_SHORT).show();
+            //System.exit(0);
+        }
+        else
+        {
+            devices_text = findViewById(R.id.textView);
+            enableBluetooth();
+        }
+
+    }
+
+
 
     private void enableBluetooth(){
         if (!bluetoothAdapter.isEnabled())
@@ -89,9 +107,26 @@ public class MainActivity extends Activity {
         if (requestCode == 6) {
             Connection.initialization();
             Connection.startScanLeDevice();
-            devices_text.setText("Scanning...");
+            devices_text.setText(devices_text.getText()+"\n\nScanning...");
         }
 
+    }
+
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode,
+            String permissions[],
+            int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_PERMISSION_ACCESS_COARSE_LOCATION:
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //Toast.makeText(MainActivity.this, "Permission Granted!", Toast.LENGTH_SHORT).show();
+                    initialization();
+                } else {
+                    Toast.makeText(MainActivity.this, "Unable to start scan.", Toast.LENGTH_SHORT).show();
+                }
+        }
     }
 
     public final BluetoothGattCallback bluetoothGattCallback = new BluetoothGattCallback() {

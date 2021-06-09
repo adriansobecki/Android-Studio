@@ -27,6 +27,10 @@ public class Connection {
         devices = new ArrayList<BluetoothDevice>();
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
+        if(bluetoothLeScanner==null) {
+            Toast.makeText(MainActivity.getAppContext(), "Cannot get BluetoothLeScanner.", Toast.LENGTH_SHORT).show();
+            System.exit(0);
+        }
 
     }
 
